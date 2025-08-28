@@ -49,10 +49,12 @@ def call_spoonacular(endpoint: str, params: dict, timeout: int = 12) -> Optional
         try:
             r = requests.get(f"https://api.spoonacular.com{endpoint}", params=params, timeout=timeout)
             if r.status_code in (401, 402, 429):
+                # rotate key and try next
                 st.session_state.key_index = (st.session_state.key_index + 1) % n
                 continue
             return r
         except Exception:
+            # network/timeout; rotate and try next
             st.session_state.key_index = (st.session_state.key_index + 1) % n
             continue
     return None
@@ -311,23 +313,39 @@ def quick_yes_no(df: pd.DataFrame, item: str) -> str:
     return f"❌ No, **{item}** not found."
 
 # ---------------- Image helpers ----------------
-def _fix_image_url(val: Any) -> Optional[str]:
-    """Return a valid absolute URL or None for recipe image."""
-    if not val:
+def _build_img_from_id(rid: Any, image_type: Optional[str]) -> Optional[str]:
+    """Construct a Spoonacular CDN URL if we have id + imageType."""
+    try:
+        rid_int = int(rid)
+    except Exception:
         return None
+    if not image_type:
+        return None
+    return f"https://img.spoonacular.com/recipes/{rid_int}-556x370.{image_type}"
+
+def _fix_image_url(val: Any, rid: Any = None, image_type: Optional[str] = None) -> Optional[str]:
+    """
+    Normalize/construct a usable image URL.
+    Priority:
+      1) Full http(s)/data URL provided by API
+      2) Filename -> prefix CDN base path
+      3) Fallback from (id + imageType)
+    """
     if isinstance(val, str) and val.strip():
         v = val.strip()
-        if v.startswith("http://") or v.startswith("https://") or v.startswith("data:"):
+        if v.startswith(("http://", "https://", "data:")):
             return v
-        # Spoonacular often returns filenames like "12345-556x370.jpg"
-        if v.endswith(".jpg") or v.endswith(".png") or v.endswith(".jpeg") or "/" not in v:
-            return f"https://spoonacular.com/recipeImages/{v}"
+        if v.endswith((".jpg", ".jpeg", ".png")) and "/" not in v:
+            return f"https://img.spoonacular.com/recipes/{v}"
+    built = _build_img_from_id(rid, image_type)
+    if built:
+        return built
     return None
 
-def _render_safe_image(img_val):
+def _render_safe_image(img_val: Any, rid: Any = None, image_type: Optional[str] = None):
     """Safely render recipe images (skip invalid ones)."""
     try:
-        url = _fix_image_url(img_val)
+        url = _fix_image_url(img_val, rid=rid, image_type=image_type)
         if url:
             st.image(url, use_container_width=False)
             return True
@@ -385,16 +403,21 @@ def spoonacular_recipes(include_ingredients: List[str], diet: str | None, number
         if debug and r is not None: st.caption(f"[complexSearch] status={r.status_code}")
         if r and r.status_code == 200:
             results = (r.json() or {}).get("results", []) or []
-            summaries = [{
-                "id": rec.get("id"),
-                "title": rec.get("title"),
-                "image": _fix_image_url(rec.get("image")),
-                "usedIngredientCount": rec.get("usedIngredientCount"),
-                "missedIngredientCount": rec.get("missedIngredientCount"),
-                "sourceUrl": rec.get("sourceUrl") or rec.get("spoonacularSourceUrl"),
-                "readyInMinutes": rec.get("readyInMinutes"),
-                "servings": rec.get("servings"),
-            } for rec in results]
+            summaries = []
+            for rec in results:
+                rid = rec.get("id")
+                img = _fix_image_url(rec.get("image"), rid=rid, image_type=rec.get("imageType"))
+                summaries.append({
+                    "id": rid,
+                    "title": rec.get("title"),
+                    "image": img,
+                    "usedIngredientCount": rec.get("usedIngredientCount"),
+                    "missedIngredientCount": rec.get("missedIngredientCount"),
+                    "sourceUrl": rec.get("sourceUrl") or rec.get("spoonacularSourceUrl"),
+                    "readyInMinutes": rec.get("readyInMinutes"),
+                    "servings": rec.get("servings"),
+                    "imageType": rec.get("imageType"),
+                })
             if summaries: return _save_and_return(summaries)
         elif r is None:
             # all keys failed → cache/demo
@@ -414,16 +437,21 @@ def spoonacular_recipes(include_ingredients: List[str], diet: str | None, number
         if debug and r2 is not None: st.caption(f"[findByIngredients] status={r2.status_code}")
         if r2 and r2.status_code == 200:
             arr = r2.json() or []
-            out = [{
-                "id": rec.get("id"),
-                "title": rec.get("title"),
-                "image": _fix_image_url(rec.get("image")),
-                "usedIngredientCount": rec.get("usedIngredientCount") or 0,
-                "missedIngredientCount": rec.get("missedIngredientCount") or 0,
-                "sourceUrl": None,
-                "readyInMinutes": None,
-                "servings": None,
-            } for rec in arr]
+            out = []
+            for rec in arr:
+                rid = rec.get("id")
+                img = _fix_image_url(rec.get("image"), rid=rid, image_type=rec.get("imageType"))
+                out.append({
+                    "id": rid,
+                    "title": rec.get("title"),
+                    "image": img,
+                    "usedIngredientCount": rec.get("usedIngredientCount") or 0,
+                    "missedIngredientCount": rec.get("missedIngredientCount") or 0,
+                    "sourceUrl": None,
+                    "readyInMinutes": None,
+                    "servings": None,
+                    "imageType": rec.get("imageType"),
+                })
             if out: return _save_and_return(out)
         elif r2 is None:
             return entry.get("data", []) if entry else _load_demo_recipes()
@@ -455,7 +483,7 @@ def spoonacular_recipe_details(recipe_id: int) -> Optional[Dict[str, Any]]:
         details = {
             "id": data.get("id"),
             "title": data.get("title"),
-            "image": _fix_image_url(data.get("image")),
+            "image": _fix_image_url(data.get("image"), rid=data.get("id"), image_type=data.get("imageType")),
             "readyInMinutes": data.get("readyInMinutes"),
             "servings": data.get("servings"),
             "sourceUrl": data.get("sourceUrl") or data.get("spoonacularSourceUrl"),
@@ -484,8 +512,8 @@ def render_recipe_card(summary: Dict[str, Any], expanded: bool = False):
             f"🍽️ {summary.get('servings','?')} servings"
         )
 
-        # Safe image display (after normalization)
-        _render_safe_image(summary.get("image"))
+        # Safe image display (after normalization, with id fallback)
+        _render_safe_image(summary.get("image"), rid=rid, image_type=summary.get("imageType"))
 
         st.write(
             f"Used: {summary.get('usedIngredientCount', 0) or 0} • "
@@ -779,7 +807,7 @@ elif menu == "Budget":
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Budget (₹)", f"{status['monthly_budget']:,.0f}")
         c2.metric("Spent MTD (₹)", f"{spent:,.0f}")
-        c3.metric("Planned (₹)", f"{total_planned:,.0f}")
+        c3.metric("Planned (₹)", f"{total_planned']:,.0f}")
         c4.metric("Remaining (₹)", f"{status['remaining']:,.0f}")
 
         if status["status"] == "over":
