@@ -453,6 +453,23 @@ def spoonacular_recipe_details(recipe_id: int) -> Optional[Dict[str, Any]]:
     except Exception:
         return None
 
+# ---- helper for safe image rendering ----
+def _render_safe_image(img_val):
+    """Safely render recipe images (skip invalid ones)."""
+    try:
+        if not img_val:
+            return False
+        if isinstance(img_val, str) and img_val.strip() and (
+            img_val.startswith("http://")
+            or img_val.startswith("https://")
+            or img_val.startswith("data:")
+        ):
+            st.image(img_val, use_container_width=False)
+            return True
+        return False
+    except Exception:
+        return False
+
 def render_recipe_card(summary: Dict[str, Any], expanded: bool = False):
     rid = summary["id"]
     with st.container():
@@ -461,7 +478,10 @@ def render_recipe_card(summary: Dict[str, Any], expanded: bool = False):
             f"**{summary.get('title','(No title)')}**  |  ⏱️ {summary.get('readyInMinutes','?')} min • "
             f"🍽️ {summary.get('servings','?')} servings"
         )
-        if summary.get("image"): st.image(summary["image"], use_container_width=False)
+
+        # Safe image display
+        _render_safe_image(summary.get("image"))
+
         st.write(
             f"Used: {summary.get('usedIngredientCount', 0) or 0} • "
             f"Missing: {summary.get('missedIngredientCount', 0) or 0}"
@@ -515,8 +535,6 @@ with st.sidebar:
 
     st.divider()
     st.markdown("### ➕ Quick Add")
-    # (rest of your Quick Add code…)
-
     qa_name = st.text_input("Item name", key="qa_name")
     qa_qty = st.number_input("Qty", 0.0, 1e6, 1.0, key="qa_qty")
     qa_unit = st.text_input("Unit", "pcs", key="qa_unit")
