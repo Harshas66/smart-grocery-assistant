@@ -807,7 +807,7 @@ elif menu == "Budget":
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Budget (₹)", f"{status['monthly_budget']:,.0f}")
         c2.metric("Spent MTD (₹)", f"{spent:,.0f}")
-        c3.metric("Planned (₹)", f"{total_planned']:,.0f}")
+        c3.metric("Planned (₹)", f"{total_planned:,.0f}")   # <-- fixed
         c4.metric("Remaining (₹)", f"{status['remaining']:,.0f}")
 
         if status["status"] == "over":
