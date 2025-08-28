@@ -42,7 +42,6 @@ def call_spoonacular(endpoint: str, params: dict, timeout: int = 12) -> Optional
     for _ in range(n):
         k = current_key()
         if not k:
-            # If empty key, rotate and try next
             st.session_state.key_index = (st.session_state.key_index + 1) % n
             continue
         params = dict(params or {})
@@ -50,12 +49,10 @@ def call_spoonacular(endpoint: str, params: dict, timeout: int = 12) -> Optional
         try:
             r = requests.get(f"https://api.spoonacular.com{endpoint}", params=params, timeout=timeout)
             if r.status_code in (401, 402, 429):
-                # rotate key and try next
                 st.session_state.key_index = (st.session_state.key_index + 1) % n
                 continue
             return r
         except Exception:
-            # network/timeout; rotate and try next
             st.session_state.key_index = (st.session_state.key_index + 1) % n
             continue
     return None
@@ -313,6 +310,31 @@ def quick_yes_no(df: pd.DataFrame, item: str) -> str:
             return f"✅ Yes, you have **{n}**."
     return f"❌ No, **{item}** not found."
 
+# ---------------- Image helpers ----------------
+def _fix_image_url(val: Any) -> Optional[str]:
+    """Return a valid absolute URL or None for recipe image."""
+    if not val:
+        return None
+    if isinstance(val, str) and val.strip():
+        v = val.strip()
+        if v.startswith("http://") or v.startswith("https://") or v.startswith("data:"):
+            return v
+        # Spoonacular often returns filenames like "12345-556x370.jpg"
+        if v.endswith(".jpg") or v.endswith(".png") or v.endswith(".jpeg") or "/" not in v:
+            return f"https://spoonacular.com/recipeImages/{v}"
+    return None
+
+def _render_safe_image(img_val):
+    """Safely render recipe images (skip invalid ones)."""
+    try:
+        url = _fix_image_url(img_val)
+        if url:
+            st.image(url, use_container_width=False)
+            return True
+        return False
+    except Exception:
+        return False
+
 # ---------------- Recipes (cache/offline + key rotation) ----------------
 def spoonacular_recipes(include_ingredients: List[str], diet: str | None, number: int = 10, debug: bool = False) -> List[Dict[str, Any]]:
     # Offline mode: return cache or demo; skip network entirely
@@ -366,7 +388,7 @@ def spoonacular_recipes(include_ingredients: List[str], diet: str | None, number
             summaries = [{
                 "id": rec.get("id"),
                 "title": rec.get("title"),
-                "image": rec.get("image"),
+                "image": _fix_image_url(rec.get("image")),
                 "usedIngredientCount": rec.get("usedIngredientCount"),
                 "missedIngredientCount": rec.get("missedIngredientCount"),
                 "sourceUrl": rec.get("sourceUrl") or rec.get("spoonacularSourceUrl"),
@@ -395,7 +417,7 @@ def spoonacular_recipes(include_ingredients: List[str], diet: str | None, number
             out = [{
                 "id": rec.get("id"),
                 "title": rec.get("title"),
-                "image": rec.get("image"),
+                "image": _fix_image_url(rec.get("image")),
                 "usedIngredientCount": rec.get("usedIngredientCount") or 0,
                 "missedIngredientCount": rec.get("missedIngredientCount") or 0,
                 "sourceUrl": None,
@@ -433,7 +455,7 @@ def spoonacular_recipe_details(recipe_id: int) -> Optional[Dict[str, Any]]:
         details = {
             "id": data.get("id"),
             "title": data.get("title"),
-            "image": data.get("image"),
+            "image": _fix_image_url(data.get("image")),
             "readyInMinutes": data.get("readyInMinutes"),
             "servings": data.get("servings"),
             "sourceUrl": data.get("sourceUrl") or data.get("spoonacularSourceUrl"),
@@ -453,23 +475,6 @@ def spoonacular_recipe_details(recipe_id: int) -> Optional[Dict[str, Any]]:
     except Exception:
         return None
 
-# ---- helper for safe image rendering ----
-def _render_safe_image(img_val):
-    """Safely render recipe images (skip invalid ones)."""
-    try:
-        if not img_val:
-            return False
-        if isinstance(img_val, str) and img_val.strip() and (
-            img_val.startswith("http://")
-            or img_val.startswith("https://")
-            or img_val.startswith("data:")
-        ):
-            st.image(img_val, use_container_width=False)
-            return True
-        return False
-    except Exception:
-        return False
-
 def render_recipe_card(summary: Dict[str, Any], expanded: bool = False):
     rid = summary["id"]
     with st.container():
@@ -479,7 +484,7 @@ def render_recipe_card(summary: Dict[str, Any], expanded: bool = False):
             f"🍽️ {summary.get('servings','?')} servings"
         )
 
-        # Safe image display
+        # Safe image display (after normalization)
         _render_safe_image(summary.get("image"))
 
         st.write(
