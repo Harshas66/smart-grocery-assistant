@@ -1,0 +1,24 @@
+2025-08-27 00:14:09,067 - INFO - Entered the data ingestion method or component
+2025-08-27 00:15:37,472 - INFO - Entered the data ingestion method or component
+2025-08-27 00:16:32,810 - INFO - Entered the data ingestion method or component
+2025-08-27 00:16:32,866 - INFO - Read the dataset as dataframe
+2025-08-27 00:16:32,998 - INFO - Saved cleaned dataset to artifacts/data.csv
+2025-08-27 00:16:32,998 - INFO - Train test split initiated
+2025-08-27 00:16:33,111 - INFO - Ingestion of the data is completed
+2025-08-27 00:23:41,311 - INFO - Entered the data ingestion method or component
+2025-08-27 00:23:41,374 - INFO - Read the dataset as dataframe
+2025-08-27 00:23:41,468 - INFO - Saved cleaned dataset to artifacts/data.csv
+2025-08-27 00:23:41,468 - INFO - Train test split initiated
+2025-08-27 00:23:41,690 - INFO - Ingestion of the data is completed
+2025-08-27 00:26:26,999 - INFO - Entered the data ingestion method or component
+2025-08-27 00:26:27,073 - INFO - Read the dataset as dataframe
+2025-08-27 00:28:27,413 - INFO - Entered the data ingestion method or component
+2025-08-27 00:28:27,445 - INFO - Read the dataset as dataframe
+2025-08-27 00:28:27,577 - INFO - Saved cleaned dataset to artifacts/data.csv
+2025-08-27 00:28:27,577 - INFO - Train test split initiated
+2025-08-27 00:28:27,684 - INFO - Ingestion of the data is completed
+2025-08-27 00:31:52,571 - INFO - Entered the data ingestion method or component
+2025-08-27 00:31:52,618 - INFO - Read the dataset as dataframe
+2025-08-27 00:31:52,751 - INFO - Saved cleaned dataset to artifacts/data.csv
+2025-08-27 00:31:52,753 - INFO - Train test split initiated
+2025-08-27 00:31:52,856 - INFO - Ingestion of the data is completed

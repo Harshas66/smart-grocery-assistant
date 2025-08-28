@@ -1,0 +1,20 @@
+2025-08-23 12:34:00,010 INFO - This is an info message from test_logger.py
+2025-08-23 12:38:55,358 INFO - Hello, this is a test log message.
+2025-08-23 14:21:00,948 INFO - Starting main program
+2025-08-23 14:21:00,949 ERROR - Error Occured
+2025-08-23 14:21:00,949 ERROR - ('Custom Error Zero', <module 'sys' (built-in)>)
+2025-08-23 14:22:54,308 - INFO - Starting main program
+2025-08-23 14:22:54,308 - ERROR - Error Occured
+2025-08-23 14:22:54,308 - ERROR - ('Custom Error Zero', <module 'sys' (built-in)>)
+2025-08-23 14:25:02,876 - INFO - Starting main program
+2025-08-23 14:25:02,876 - ERROR - Error Occured
+2025-08-23 14:25:02,894 - ERROR - ('Custom Error Zero', <module 'sys' (built-in)>)
+2025-08-23 16:27:48,298 - INFO - Entered the data ingestion method or component
+2025-08-23 16:31:13,971 - INFO - Entered the data ingestion method or component
+2025-08-23 16:35:16,302 - INFO - Entered the data ingestion method or component
+2025-08-23 16:43:42,079 - INFO - Entered the data ingestion method or component
+2025-08-23 16:51:10,026 - INFO - Entered the data ingestion method or component
+2025-08-23 16:51:56,146 - INFO - Entered the data ingestion method or component
+2025-08-23 16:51:56,190 - INFO - Read the dataset as dataframe
+2025-08-23 16:51:56,202 - INFO - Train test split initiated
+2025-08-23 16:51:56,255 - INFO - Ingestion of the data is completed

@@ -1,0 +1,7 @@
+User_ID,user_diet,preferred_cuisines,monthly_budget,Product_ID,Product_Name,Brand,Category,unit,unit_price_inr,quantity_on_hand,reorder_level,reorder_quantity,expiration_date
+1,none,Indian;Italian,0.0,1756376706063,Milk,Heritage,,ltrs,0.0,1.0,1.0,1.0,2025-08-31
+1,none,Indian;Italian,4000.0,1756378488163,Eggs,,,pcs,0.0,6.0,1.0,1.0,2025-08-30
+1,none,Indian;Italian,0.0,1756378731560,Rice,Dawat,,kg,0.0,3.0,1.0,1.0,2025-10-25
+1,none,Indian;Italian,0.0,1756380237027,cauliflower,,vegetables,kg,30.0,1.0,1.0,1.0,2025-08-28
+1,none,Indian;Italian,0.0,1756384464105,chicken,,Non-veg,kg,220.0,1.0,1.0,1.0,2025-08-28
+1,none,Indian;Italian,0.0,1756395399819,Dal,,,kg,90.0,1.0,1.0,1.0,2025-08-28

@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.streamlit/
+artifacts/cache/
+artifacts/transactions.csv
+artifacts/inventory.csv
+artifacts/*.jpg

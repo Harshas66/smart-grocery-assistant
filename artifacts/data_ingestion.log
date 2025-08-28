@@ -1,0 +1,8 @@
+2025-08-27 00:54:53,576 - INFO - Entered the data ingestion method
+2025-08-27 00:54:53,628 - INFO - Dataset found at C:\Users\mohd adnan\Desktop\ML PROJECT\notebook\processed_smart_grocery_dataset.csv
+2025-08-27 00:54:53,736 - INFO - Read the dataset as dataframe
+2025-08-27 00:54:54,014 - INFO - Saved cleaned dataset to artifacts\data.csv
+2025-08-27 00:54:54,016 - INFO - Train-test split initiated
+2025-08-27 00:54:54,183 - INFO - Train dataset saved to artifacts\train.csv
+2025-08-27 00:54:54,183 - INFO - Test dataset saved to artifacts\test.csv
+2025-08-27 00:54:54,183 - INFO - Data ingestion completed successfully
